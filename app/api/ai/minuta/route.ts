@@ -15,6 +15,8 @@ Regras de elaboração:
 
 Responda apenas com o texto da minuta, sem comentários antes ou depois.`;
 
+const MODELO = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
 export async function POST(req: Request) {
   const supabase = createClient();
   const {
@@ -25,10 +27,10 @@ export async function POST(req: Request) {
     return new Response("Não autorizado.", { status: 401 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return new Response(
-      "A variável ANTHROPIC_API_KEY não está configurada no servidor.",
+      "A variável GEMINI_API_KEY não está configurada no servidor.",
       { status: 500 }
     );
   }
@@ -53,21 +55,24 @@ export async function POST(req: Request) {
     .filter((l) => l !== "")
     .join("\n");
 
-  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 4096,
-      stream: true,
-      system: SYSTEM,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+  const upstream = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:streamGenerateContent?alt=sse`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM }] },
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.4,
+        },
+      }),
+    }
+  );
 
   if (!upstream.ok || !upstream.body) {
     const detalhe = await upstream.text().catch(() => "");
@@ -96,12 +101,12 @@ export async function POST(req: Request) {
             if (!payload || payload === "[DONE]") continue;
             try {
               const evento = JSON.parse(payload);
-              if (
-                evento.type === "content_block_delta" &&
-                evento.delta?.type === "text_delta" &&
-                evento.delta.text
-              ) {
-                controller.enqueue(encoder.encode(evento.delta.text));
+              const texto =
+                evento?.candidates?.[0]?.content?.parts
+                  ?.map((p: { text?: string }) => p.text ?? "")
+                  .join("") ?? "";
+              if (texto) {
+                controller.enqueue(encoder.encode(texto));
               }
             } catch {
               // linha parcial de SSE, ignorada
