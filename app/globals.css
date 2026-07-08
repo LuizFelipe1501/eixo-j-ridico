@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  @apply bg-concreto text-grafite font-sans antialiased;
+}
+
+.wrap {
+  @apply mx-auto w-full max-w-wrap px-5 sm:px-8;
+}
+
+.eyebrow {
+  @apply font-mono text-xs uppercase tracking-[0.2em] text-planalto;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-planalto;
+}
+
+.btn-primary {
+  @apply btn bg-planalto text-white hover:bg-planalto-deep;
+}
+
+.btn-ipe {
+  @apply btn bg-ipe text-grafite hover:bg-[#dfa90a];
+}
+
+.btn-ghost {
+  @apply btn border border-planalto/25 bg-white text-planalto hover:border-planalto;
+}
