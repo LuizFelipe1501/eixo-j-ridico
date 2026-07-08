@@ -1,47 +1,75 @@
 # Eixo Jurídico
 
-Landing page de delegação de peças jurídicas com inteligência híbrida, focada na advocacia do Distrito Federal. Construída com Next.js 14 (App Router), TypeScript e Tailwind CSS, pronta para deploy na Vercel.
+Plataforma de delegação de peças jurídicas com IA, focada na advocacia do Distrito Federal. Next.js 14 (App Router) + TypeScript + Tailwind CSS + Supabase + API da Anthropic, pronta para deploy na Vercel.
 
-## Rodar localmente
+## O que está incluído
+
+**Site público:** home, /sobre, /contato (formulário salva leads no banco), páginas legais.
+
+**Plataforma (/painel), protegida por login:**
+- Dashboard com indicadores (peças em andamento, prazos abertos, publicações não lidas)
+- Peças: delegar, gerar minuta com IA (streaming), editar minuta, status e chat por peça
+- Prazos: cadastro, agenda com alerta de vencidos, concluir/reabrir
+- Publicações: registro e caixa de intimações
+- Configurações: perfil do advogado e do escritório
+
+**Banco (Supabase):** tabelas `profiles`, `pecas`, `peca_mensagens`, `prazos`, `publicacoes`, `leads`, todas com Row Level Security. Schema em `supabase/migrations/0001_init.sql`.
+
+**IA:** rota `app/api/ai/minuta/route.ts` chama a API da Anthropic (Claude) com prompt focado na prática do TJDFT/TRF1/TRT10 e devolve a minuta em streaming.
+
+## Configuração (15 minutos)
+
+### 1. Supabase
+1. Crie um projeto em https://supabase.com.
+2. Abra o SQL Editor e execute o conteúdo de `supabase/migrations/0001_init.sql`.
+3. Em Project Settings > API, copie a URL e a chave `anon`.
+4. Em Authentication > Providers, confirme que Email está habilitado. Para testar sem e-mail de confirmação, desative "Confirm email" em Authentication > Sign In / Up.
+
+### 2. Anthropic
+1. Crie uma chave em https://console.anthropic.com.
+
+### 3. Variáveis de ambiente
+Copie `.env.example` para `.env.local` e preencha:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+ANTHROPIC_API_KEY=...
+```
+
+### 4. Rodar localmente
 
 ```bash
 npm install
 npm run dev
 ```
 
-O site sobe em http://localhost:3000.
-
-## Publicar no GitHub
+## GitHub + Vercel
 
 ```bash
 git init
 git add .
-git commit -m "Site inicial do Eixo Jurídico"
+git commit -m "Plataforma Eixo Jurídico"
 git branch -M main
 git remote add origin https://github.com/SEU_USUARIO/eixo-juridico.git
 git push -u origin main
 ```
 
-## Deploy na Vercel
+Na Vercel: **Add New > Project**, importe o repositório e, antes do deploy, adicione as três variáveis de ambiente em **Environment Variables**. O `.env.local` nunca vai para o GitHub (já está no .gitignore).
 
-1. Acesse https://vercel.com e faça login com a conta do GitHub.
-2. Clique em **Add New > Project** e importe o repositório `eixo-juridico`.
-3. A Vercel detecta o Next.js automaticamente. Não precisa configurar nada: clique em **Deploy**.
-4. Cada `git push` na branch `main` gera um novo deploy automático.
+Depois do primeiro deploy, adicione a URL de produção em Supabase > Authentication > URL Configuration (Site URL e Redirect URLs, incluindo `https://SEU_DOMINIO/auth/callback`).
 
-## Personalização rápida
+## Personalização
 
-- **Nome da marca, WhatsApp e e-mail:** edite `lib/site.ts`. O número atual é um placeholder (`5561999999999`), troque pelo seu.
-- **Cores:** edite `tailwind.config.ts` (tokens `planalto`, `ipe`, `concreto`, `grafite`).
-- **Planos e preços:** edite `components/Pricing.tsx`.
-- **Áreas e documentos:** edite `components/Areas.tsx`.
-- **Perguntas frequentes:** edite `components/Faq.tsx`.
-- **Textos legais:** substitua os placeholders em `app/politica-de-privacidade` e `app/termos-de-uso` antes de ir para produção.
+- Marca, WhatsApp e e-mail: `lib/site.ts`
+- Cores: `tailwind.config.ts`
+- Prompt da IA: `app/api/ai/minuta/route.ts`
+- Planos e preços: `components/Pricing.tsx`
 
-## Estrutura
+## Roadmap sugerido
 
-```
-app/            páginas (App Router)
-components/     seções da landing e elementos visuais
-lib/site.ts     constantes da marca e contatos
-```
+- Integração automática com o DJEN para puxar publicações pela OAB
+- Chat com a IA para revisar e ajustar minutas já salvas
+- Exportação da minuta em .docx com o timbre do escritório
+- Papéis de acesso (sócio, associado, estagiário) por escritório
+- Pagamentos por peça (Stripe ou Mercado Pago)

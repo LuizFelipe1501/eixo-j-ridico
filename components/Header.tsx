@@ -4,11 +4,10 @@ import { useState } from "react";
 import { site } from "@/lib/site";
 
 const links = [
-  { href: "#plataforma", label: "Plataforma" },
-  { href: "#areas", label: "Áreas" },
-  { href: "#como-funciona", label: "Como funciona" },
-  { href: "#planos", label: "Planos" },
-  { href: "#faq", label: "Dúvidas" },
+  { href: "/#plataforma", label: "Plataforma" },
+  { href: "/#planos", label: "Planos" },
+  { href: "/sobre", label: "Sobre" },
+  { href: "/contato", label: "Contato" },
 ];
 
 export default function Header() {
@@ -41,6 +40,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <a href="/entrar" className="btn-ghost px-5 py-2.5">
+            Entrar
+          </a>
           <a href={site.whatsapp} className="btn-primary" target="_blank" rel="noopener noreferrer">
             Falar com um consultor
           </a>
@@ -71,6 +73,9 @@ export default function Header() {
                 {l.label}
               </a>
             ))}
+            <a href="/entrar" className="btn-ghost mt-2">
+              Entrar na plataforma
+            </a>
             <a href={site.whatsapp} className="btn-primary mt-2" target="_blank" rel="noopener noreferrer">
               Falar com um consultor
             </a>
